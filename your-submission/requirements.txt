@@ -5,3 +5,4 @@ huggingface_hub==1.25.1
 pandas==3.0.5
 pyarrow==25.0.1
 grapheme==0.6.0
+torch==2.14.0
