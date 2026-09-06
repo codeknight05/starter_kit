@@ -41,3 +41,9 @@ python your-submission/partB/calc_capacity.py
 The Part A memos are in `your-submission/partA/memo.md`, the Part B analysis is in `your-submission/partB/b1_b4_analysis.md`, and the Part C decision memo is in `your-submission/partC/memo.md`. Captured evidence outputs are in `your-submission/partA/results/` and `your-submission/partB/calc_capacity_output.txt`.
 
 The boundary between tokenizer evidence and production serving validation is documented in [PRODUCTION_VALIDATION.md](your-submission/PRODUCTION_VALIDATION.md).
+
+## Desmos companion
+
+Interactive tokenizer sentence-ratio visualization: https://www.desmos.com/calculator/vykqbj6s4o
+
+The graph contains the measured English-normalized sentence ratios for GPT-2, XLM-RoBERTa-base, and Qwen2.5-7B across English, Hindi, Kannada, and Tamil. It is a visualization of the checked-in benchmark evidence, not an additional serving benchmark.
