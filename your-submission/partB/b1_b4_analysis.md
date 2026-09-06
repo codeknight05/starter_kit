@@ -33,7 +33,7 @@ Ideal sequence capacity:
 
 `12.77 GiB / 448 MiB = 29.2 sequences`
 
-The log shows a lower effective scheduler limit, about 25-26 active long sequences. Batch 24 at `prompt_len=3584, gen_len=512` reaches `kv_cache_util=0.93` with zero preemptions. Batch 32 reaches `kv_cache_util=0.97` and preempts 7 sequences, leaving about 25 non-preempted active sequences. The gap between 29 ideal and ~26 observed is consistent with block allocation granularity, scheduler watermarks, and overhead not itemized in the spec.
+This is **theoretical spec-only capacity**, not an operational promise. The log shows an observed operational limit around 24-26 long-context sequences: batch 24 reaches `kv_cache_util=0.93` with zero preemptions, while batch 32 reaches `0.97` and preempts 7 sequences. The gap is consistent with block allocation granularity, scheduler reservations/watermarks, fragmentation, and runtime overhead not itemized in the simplified arithmetic.
 
 ## B2. Long-Context Throughput Anomaly
 
@@ -48,7 +48,7 @@ In the long-context sweep, `reported_tok_s` rises through batch 24, then falls:
 
 The anomaly is the drop after batch 24. The mechanism is KV-cache saturation: once the long prompts no longer fit, the scheduler preempts sequences. Rescheduled sequences must re-prefill the 3584-token prompt, spending GPU time on repeated prompt work rather than new output tokens.
 
-Recommended change: cap active long-context concurrency at `max_num_seqs=24` per L4 replica and add another replica before admitting a 48-request long-context burst to one GPU. Predicted effect: preemptions stay at 0, per-replica generation goodput stays near the batch-24 value of `24 * 512 / 61.16 = 200.9 output tok/s`, and a 48-request burst split across two replicas delivers about `401.8 output tok/s` with batch-24-like per-request latency instead of the preempted batch-48 behavior.
+Recommended change: cap active long-context concurrency at `max_num_seqs=24` per L4 replica and add another replica before admitting a 48-request long-context burst to one GPU. First-order projection, not a measured two-replica benchmark: `2 * 200.92 = 401.84 output tok/s`, assuming each replica sustains batch-24 goodput. `max_num_seqs=24` is a deployment recommendation from the observed zero-preemption point, not a universal vLLM optimum.
 
 ## B3. Goodput vs Reported Throughput
 

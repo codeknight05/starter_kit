@@ -8,17 +8,17 @@ We have one A100-80GB for 14 days, one native-speaker reviewer for Hindi and Kan
 
 ## Back-Of-Envelope Arithmetic
 
-Reviewer budget: `10 h/week * 2 weeks = 20 h`. At about 15 paired judgments/hour, the reviewer can score `20 * 15 = 300` comparisons total, roughly 150 Hindi and 150 Kannada. That is enough to choose among prompt variants, but not enough to validate a synthetic SFT set across six languages.
+Reviewer budget: `10 h/week * 2 weeks = 20 h`. Assumption: one paired judgment takes about 4 minutes including reading and recording, or approximately 15 judgments/hour. The reviewer can therefore score `20 * 15 = 300` comparisons total, roughly 150 Hindi and 150 Kannada. That is enough to choose among prompt variants, but not enough to validate a synthetic SFT set across six languages.
 
-Prompt sweep: `6 languages * 50 prompts * 6 prompt variants = 1,800 generations`. Even at a conservative 100 output tok/s and 200 output tokens each, this is about `360,000 / 100 = 3,600 s`, or 1 GPU-hour plus overhead. Serving cost for the chosen prompt is only the added prefill text, roughly 30-80 tokens/request. A rewriter adds a second decode pass to every request, and SFT creates a larger validation burden than our reviewer budget can support.
+Prompt sweep: `6 languages * 50 prompts * 6 prompt variants = 1,800 generations`. At an assumed 100 output tok/s and 200 output tokens each, this is `360,000 / 100 = 3,600 s`, or 1 hour of raw generation time plus overhead. Sensitivity is 2 hours at 50 tok/s and 0.67 hours at 150 tok/s. These figures cover generation only; prompt prefill, reviewer time, and serving overhead are separate. A rewriter adds a second decode pass to every request, and SFT creates a larger validation burden than our reviewer budget can support.
 
 ## Success Metric
 
-Blind pairwise human evaluation on Hindi and Kannada: prompt variant beats baseline formal style in at least **70%** of reviewed pairs, with fluency at least **4.5/5** and semantic-error rate under **2%**. For Tamil, Telugu, Bengali, and Marathi, use automated filters only as a guardrail: response length change under **25%** and multilingual embedding similarity at least **0.85** versus the baseline answer.
+Primary human metric on Hindi and Kannada: prompt variant beats baseline formal style in at least **70%** of reviewed pairs, with human-rated fluency at least **4.5/5** and human-checked semantic-error rate under **2%**. For Tamil, Telugu, Bengali, and Marathi, automated response-length change under **25%** and embedding similarity at least **0.85** are guardrails, not substitutes for native-speaker evaluation or proof of casualness.
 
 ## Kill Criterion
 
-Kill prompt-only by **end of Day 7** if Hindi/Kannada win rate is below **65%**, if semantic-error rate is above **2%**, or if average response length grows by more than **30%**. The fallback is a narrow Hindi/Kannada LoRA/SFT experiment only, because those are the languages we can actually review.
+Kill prompt-only by **end of Day 7** if Hindi/Kannada win rate is below **65%**, if semantic-error rate is above **2%**, or if average response length grows by more than **30%**. These are preselected decision thresholds, not measured results. The fallback is a narrow Hindi/Kannada LoRA/SFT experiment only, because those are the languages we can actually review.
 
 ## Day 1 Experiment
 

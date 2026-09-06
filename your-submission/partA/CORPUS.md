@@ -22,6 +22,8 @@ the checked-in evidence corpus remains the original four-language evaluation.
 
 The corpus contains 250 multi-way parallel sentences per language from the FLORES-200 devtest split. FLORES is a professionally translated multilingual benchmark with formal, general-domain sentences drawn from sources such as news and Wikipedia-like text.
 
+250 rows were selected because they are large enough to expose stable tokenizer and denominator differences for this 10-hour audit while keeping reruns and live-defense experiments practical. This is sufficient for a reproducible audit baseline, not for production capacity commitments or broad language-quality claims.
+
 ## Preprocessing
 
 `build_corpus.py` applies:
@@ -35,7 +37,7 @@ No lowercasing, punctuation stripping, transliteration, language filtering, or d
 
 ## Caveats
 
-This corpus is strong for comparing tokenizer cost on aligned semantic content, but it is not a production chat eval. It under-represents code-mixing, slang, spelling variation, transliterated Indic text, short UI commands, and conversational assistant turns. Treat the results as a clean audit baseline, then validate the chosen tokenizer route on sampled production prompts before final capacity commitments.
+FLORES is formal translated text from a limited general-domain sample. It does not reliably represent conversational language, code-switching, transliteration-heavy inputs, slang, spelling noise, or the production prompt distribution. It is strong for comparing tokenizer counts on aligned semantic content, but it is not a production chat eval. Validate any tokenizer route and capacity commitment on sampled production traffic first.
 
 ## Rebuild Command
 
@@ -44,3 +46,5 @@ From `starter_kit/`:
 ```bash
 python your-submission/partA/build_corpus.py
 ```
+
+The checked-in corpus was produced with the default command above. If the FLORES mirror cannot be fetched, the script reports the failure and uses OPUS-100 pairwise English-target data as a fallback; that fallback is not a shared multi-way corpus and should not be described as equivalent evidence.

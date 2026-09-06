@@ -1,5 +1,8 @@
 # Tokenizer & Serving Findings (v0) — for the leadership deck
 
+> Historical baseline included for audit purposes. The corrected submission in
+> `your-submission/` supersedes these conclusions for routing and capacity planning.
+
 *Status: draft, numbers final. Please don't edit the conclusions,
 the deck is already made.*
 

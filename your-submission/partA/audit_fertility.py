@@ -36,7 +36,10 @@ def load_corpora(langs, sample_size):
 
 def exp1_whitespace_split(samples, enc):
     """Flaw 1 (Code Bug): line.split(' ') vs line.split() on multiple spaces."""
-    print("=== EXPERIMENT 1: Flaw #1 — Naive line.split(' ') vs line.split() ===")
+    print("=== EXPERIMENT 1: split(' ') vs split() ===")
+    print("Hypothesis: repeated spaces create empty word entries and deflate fertility.")
+    print("Command: python your-submission/partA/audit_fertility.py")
+    print("Input: corpus_sample/eng_sample.txt, line 7 and the full 10-line sample.")
     lines = samples["eng"]
     
     # Isolate sentence with double space (Line 7)
@@ -52,7 +55,8 @@ def exp1_whitespace_split(samples, enc):
     print(f"  Tokens: {toks}")
     print(f"  Naive line.split(' '): {words_naive} words -> Fertility = {fert_naive:.4f}")
     print(f"  Clean line.split():    {words_clean} words -> Fertility = {fert_clean:.4f}")
-    print(f"  Delta: {fert_clean - fert_naive:+.4f} (Fertility deflated by {(1 - fert_naive/fert_clean)*100:.2f}% due to empty string in word list)\n")
+    print(f"  Absolute delta: {fert_clean - fert_naive:+.4f}")
+    print(f"  Relative distortion: {(1 - fert_naive/fert_clean)*100:.2f}% deflation")
 
     # Overall sample corpus impact
     tot_toks = sum(len(enc.encode(l.lower())) for l in lines)
@@ -61,10 +65,15 @@ def exp1_whitespace_split(samples, enc):
     print(f"English Sample Corpus Overall:")
     print(f"  Naive sum(split(' ')): {tot_words_naive} words -> Fertility = {tot_toks/tot_words_naive:.4f}")
     print(f"  Clean sum(split()):    {tot_words_clean} words -> Fertility = {tot_toks/tot_words_clean:.4f}\n")
+    print(f"  Corpus-level relative distortion: {(1 - (tot_toks/tot_words_naive)/(tot_toks/tot_words_clean))*100:.2f}% deflation")
+    print("Interpretation: the implementation bug is real, but its measured corpus-level effect is small on this sample.\n")
 
 def exp2_macro_vs_micro(samples, evals, enc):
     """Flaw 2 (Code Bug): Macro-average sum(r_i)/N vs Micro-average sum(toks)/sum(words)."""
-    print("=== EXPERIMENT 2: Flaw #2 — Macro-Average vs Micro-Average ===")
+    print("=== EXPERIMENT 2: Macro-average vs micro-average ===")
+    print("Hypothesis: the two aggregation rules produce different corpus statistics when sentences have different word counts.")
+    print("Command: python your-submission/partA/audit_fertility.py")
+    print("Input: corpus_sample/* and partA/eval_corpus/*; GPT-2; clean split().")
     
     eval_size = len(next(iter(evals.values()))) if evals else 0
     for name, corp in [("Sample Corpus", samples), (f"Eval Corpus ({eval_size} lines)", evals)]:
@@ -87,10 +96,14 @@ def exp2_macro_vs_micro(samples, evals, enc):
             
             print(f"  [{lang}] Macro-Avg: {macro_avg:.4f} | Micro-Avg: {micro_avg:.4f} | Delta: {delta:+.4f} ({pct_diff:+.2f}%)")
         print()
+    print("Interpretation: macro gives every sentence equal weight; micro gives aggregate tokens/words equal weight. Micro is the relevant choice for corpus-level token cost, but macro is not universally invalid.\n")
 
 def exp3_conceptual_word_unit(evals, enc):
     """Flaw 3 (Conceptual Flaw): Word as cross-lingual unit (Agglutination & Morphology)."""
-    print("=== EXPERIMENT 3: Conceptual Flaw #1 — Words as Cross-Lingual Unit ===")
+    print("=== EXPERIMENT 3: Whitespace words as a cross-language denominator ===")
+    print("Hypothesis: whitespace-word counts do not hold comparable semantic payload constant across aligned languages.")
+    print("Command: python your-submission/partA/audit_fertility.py")
+    print("Input: 250 aligned FLORES rows; GPT-2; Kannada compared with English.")
     lines_eng = evals["eng"]
     lines_kan = evals["kan"]
     
@@ -112,17 +125,23 @@ def exp3_conceptual_word_unit(evals, enc):
     print(f"Kannada Eval Set:   {tot_words_kan} total words ({words_per_sent_kan:.1f} words/sent) | Tok/Word: {fert_kan:.2f}")
     print(f"Tok/Word Ratio (Kan/Eng): {word_ratio:.2f}x worse")
     print(f"Tok/Sentence Ratio (Kan/Eng): {sent_ratio:.2f}x worse")
-    print(f"Distortion: Comparing Tok/Word inflates Kannada cost inefficiency by {((word_ratio/sent_ratio)-1)*100:.1f}% because Kannada packs {words_per_sent_eng/words_per_sent_kan:.2f}x more semantic payload into each word due to agglutination!\n")
+    distortion = (word_ratio / sent_ratio - 1) * 100
+    print(f"Absolute ratio difference: {word_ratio - sent_ratio:+.2f}x")
+    print(f"Relative distortion: {distortion:.1f}% higher by tok/word")
+    print("Interpretation: parallel sentences approximately hold meaning constant, while whitespace words, graphemes, and bytes do not. Sentence tokens are a useful first-order aligned comparison, not a universal production denominator.\n")
 
 def exp4_script_vs_tokenizer(evals):
     """Flaw 4 (Conceptual Flaw): Character count vs Graphemes & Script vs Tokenizer Vocab."""
-    print("=== EXPERIMENT 4: Conceptual Flaw #2 — Script Myth vs Tokenizer Vocab ===")
+    print("=== EXPERIMENT 4: Tokenizer vocabulary effect ===")
+    print("Hypothesis: token count inflation depends strongly on tokenizer/model vocabulary, not only on script.")
+    print("Command: python your-submission/partA/audit_fertility.py")
+    print("Input: 250 aligned FLORES rows; GPT-2 versus XLM-R; grapheme denominator.")
     gpt2_enc = tiktoken.get_encoding("gpt2")
     xlmr_tok = AutoTokenizer.from_pretrained("xlm-roberta-base")
     
     langs = ["eng", "hin", "kan", "tam"]
-    print(f"{'lang':<6}{'GPT2 Tok/Graph':>16}{'XLM-R Tok/Graph':>18}{'Vocab Effect Ratio':>20}")
-    print("-" * 62)
+    print(f"{'lang':<6}{'GPT2 Tok/Graph':>16}{'XLM-R Tok/Graph':>18}{'XLM-R/GPT2':>14}{'Reduction':>13}")
+    print("-" * 77)
     
     for lang in langs:
         lines = evals[lang]
@@ -134,13 +153,17 @@ def exp4_script_vs_tokenizer(evals):
         gpt2_tpg = gpt2_toks / tot_graphs
         xlmr_tpg = xlmr_toks / tot_graphs
         ratio = gpt2_tpg / xlmr_tpg
+        reduction = (1 - xlmr_tpg / gpt2_tpg) * 100
         
-        print(f"{lang:<6}{gpt2_tpg:>16.3f}{xlmr_tpg:>18.3f}{ratio:>20.2f}x lower with XLM-R")
-    print("\nConclusion: The 6x cost explosion in Hindi is NOT an inherent property of Indic scripts, but an artifact of GPT-2's English-centric vocabulary!\n")
+        print(f"{lang:<6}{gpt2_tpg:>16.3f}{xlmr_tpg:>18.3f}{xlmr_tpg/gpt2_tpg:>14.2f}x{reduction:>12.1f}%")
+    print("\nInterpretation: XLM-R produces fewer tokens per aligned sentence on this corpus, demonstrating tokenizer/model-vocabulary dependence. This does not by itself prove an equal end-to-end serving-cost or latency improvement.\n")
 
 def exp5_harmless_features(samples, evals, enc):
     """Audit Harmless Features: line.lower() on Indic text & NFC normalization."""
-    print("=== EXPERIMENT 5: Harmless Feature Audit — line.lower() on Indic Text ===")
+    print("=== EXPERIMENT 5: Suspicious feature - lower() ===")
+    print("Hypothesis: lower() might materially alter Indic text or token counts.")
+    print("Command: python your-submission/partA/audit_fertility.py")
+    print("Input: 250 Hindi, Kannada, and Tamil FLORES rows; GPT-2 before/after lower().")
     
     for lang in ["hin", "kan", "tam"]:
         lines = evals[lang]
@@ -161,6 +184,7 @@ def exp5_harmless_features(samples, evals, enc):
         pct_delta = (token_delta / original_tokens) * 100 if original_tokens else 0
         print(
             f"[{lang}] Total Sentences: {len(lines)} | String lower() diffs: {diff_count} | "
+            f"Original tokens: {original_tokens} | Lowered tokens: {original_tokens + token_delta} | "
             f"Token count diffs: {tok_diff} | Net token delta: {token_delta:+d} ({pct_delta:+.3f}%)"
         )
     print(

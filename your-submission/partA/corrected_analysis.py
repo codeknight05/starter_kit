@@ -4,6 +4,9 @@ corrected_analysis.py — Corrected Cross-Language Tokenizer Analysis (A3).
 Evaluates 3 tokenizers (GPT-2, XLM-RoBERTa-base, Qwen2.5-7B) across selected
 languages using 4 denominators (whitespace word, grapheme cluster,
 UTF-8 byte, and parallel sentence).
+
+Token counts are tokenizer measurements, not end-to-end model latency or serving
+cost. Hugging Face tokenizers require network/model-cache access on first run.
 """
 
 import os
@@ -23,6 +26,8 @@ def load_eval_corpus(langs):
         p = os.path.join(EVAL_DIR, f"{lang}_eval.txt")
         with open(p, "r", encoding="utf-8") as f:
             lines = [unicodedata.normalize("NFC", line.strip()) for line in f if line.strip()]
+            if not lines:
+                raise ValueError(f"No usable rows found for language {lang!r}: {p}")
             corpus[lang] = lines
     return corpus
 
@@ -30,6 +35,8 @@ def run_corrected_benchmark(sample_size=250, langs=None, tokenizer_names=None):
     langs = langs or ["eng", "hin", "kan", "tam"]
     tokenizer_names = tokenizer_names or ["gpt2", "xlmr", "qwen"]
     corpus = load_eval_corpus(langs)
+    if "eng" not in langs:
+        raise ValueError("English is required for relative ratios")
     min_sents = min(sample_size, min(len(corpus[l]) for l in corpus))
     print(f"Loaded eval corpus: {min_sents} parallel sentences per language.\n")
 

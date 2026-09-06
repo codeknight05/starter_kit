@@ -9,7 +9,10 @@ python your-submission/partA/build_corpus.py
 python your-submission/partA/audit_fertility.py
 python your-submission/partA/corrected_analysis.py
 python fertility.py --corpus eng=corpus_sample/eng_sample.txt --corpus hin=corpus_sample/hin_sample.txt --tokenizer gpt2
+python your-submission/partB/calc_capacity.py
 ```
+
+The corrected analysis downloads XLM-R and Qwen tokenizer files on first use. Token counts are not latency benchmarks; the run requires network access or a local Hugging Face cache.
 
 ## Tokenizer Numbers To Remember
 
@@ -28,6 +31,8 @@ Corrected FLORES-200 sentence-cost ratios:
 | Qwen2.5-7B | 4.32x | 6.85x | 6.04x |
 
 Main defense sentence: capacity planning should use tokens per comparable semantic request payload, not tokens per whitespace word.
+
+Do not say that XLM-R token reductions prove serving is equally faster. They demonstrate tokenizer/model-vocabulary dependence and motivate an end-to-end serving benchmark.
 
 ## KV Cache Derivation
 
@@ -51,7 +56,7 @@ Ideal spec-only capacity:
 
 `(22.08 - 7.82 - 1.49) GiB / 448 MiB = 29.2 ideal sequences`
 
-Log check: observed effective long-context capacity is lower, about 25-26 active sequences. Batch 24 has no preemptions at 0.93 cache utilization; batch 32 preempts 7; batch 48 preempts 23.
+Log check: theoretical spec-only capacity is 29.2 sequences; observed operational behavior is about 24-26 long-context sequences. Batch 24 has no preemptions at 0.93 cache utilization; batch 32 preempts 7; batch 48 preempts 23.
 
 ## Goodput Derivation
 
@@ -74,3 +79,12 @@ If KV cache uses FP8 instead of FP16, KV bytes/token halves to 57,344 bytes and 
 If the model used full MHA with 24 KV heads instead of GQA with 8 KV heads, KV bytes/token triples to 344,064 bytes/token and ideal full-context capacity drops to about 9-10 sequences.
 
 If product insists on SFT for Part C, scope it only to Hindi/Kannada first, because those are the only languages with native reviewer coverage in the stated constraints.
+
+## Defense Questions
+
+- **Why not tok/word?** Word segmentation and morphology differ, so words do not hold semantic payload constant. Parallel sentences are a better first-order aligned unit.
+- **Why not tok/byte or tok/grapheme?** They describe text representation, not comparable user-turn payload; use them diagnostically, not as the primary routing denominator.
+- **Why does longer prompt appear faster?** `reported_tok_s` includes prefill tokens. It is not generated-answer goodput.
+- **Why not batch 48?** KV saturation causes preemptions and prompt recomputation. The observed batch-48 output goodput is only 162.31 tok/s, not 3200 tok/s.
+- **What is the two-replica number?** `2 * 200.92 = 401.84 output tok/s` is a projection assuming two replicas each sustain batch-24 goodput, not a measured benchmark.
+- **Why prompt engineering?** It is reversible and fits the reviewer budget; SFT and a rewriter add validation or serving cost that the constraints do not support yet.
