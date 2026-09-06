@@ -257,12 +257,6 @@ For a fast technical review, read in this order:
 
 For implementation details, inspect the Python scripts under `your-submission/partA/` and `your-submission/partB/` and compare their outputs with the checked-in evidence files.
 
-## AI usage
-
-AI tools were used during the development of this submission. The workflow, prompts/assistance categories, and human verification are documented in [`your-submission/AI_USAGE.md`](your-submission/AI_USAGE.md).
-
-The repository does not treat AI-generated text or code as evidence. Experimental results, calculations, assumptions, and conclusions are independently checked against the underlying code/data and are labeled according to their evidentiary status.
-
 ## Submission
 
 For the assignment submission form, use this repository as the primary deliverable:
