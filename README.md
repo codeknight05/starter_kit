@@ -10,7 +10,11 @@ From the repository root:
 python -m pip install -r your-submission/requirements.txt
 ```
 
-The corrected tokenizer analysis needs network access or a populated Hugging Face cache on first use for XLM-R and Qwen tokenizer files.
+The corrected tokenizer analysis needs network access or a populated Hugging Face cache on first use for XLM-R and Qwen tokenizer files. Once cached, use `--offline` for deterministic no-network reruns:
+
+```bash
+python your-submission/partA/corrected_analysis.py --offline
+```
 
 ## Reproduce
 
@@ -35,3 +39,5 @@ python your-submission/partB/calc_capacity.py
 ```
 
 The Part A memos are in `your-submission/partA/memo.md`, the Part B analysis is in `your-submission/partB/b1_b4_analysis.md`, and the Part C decision memo is in `your-submission/partC/memo.md`. Captured evidence outputs are in `your-submission/partA/results/` and `your-submission/partB/calc_capacity_output.txt`.
+
+The boundary between tokenizer evidence and production serving validation is documented in [PRODUCTION_VALIDATION.md](your-submission/PRODUCTION_VALIDATION.md).

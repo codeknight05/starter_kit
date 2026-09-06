@@ -31,7 +31,7 @@ def load_eval_corpus(langs):
             corpus[lang] = lines
     return corpus
 
-def run_corrected_benchmark(sample_size=250, langs=None, tokenizer_names=None):
+def run_corrected_benchmark(sample_size=250, langs=None, tokenizer_names=None, local_files_only=False):
     langs = langs or ["eng", "hin", "kan", "tam"]
     tokenizer_names = tokenizer_names or ["gpt2", "xlmr", "qwen"]
     corpus = load_eval_corpus(langs)
@@ -49,15 +49,15 @@ def run_corrected_benchmark(sample_size=250, langs=None, tokenizer_names=None):
     if unknown:
         raise ValueError(f"Unsupported tokenizers: {', '.join(unknown)}")
 
-    print("Loading tokenizers...")
+    print("Loading tokenizers..." + (" (local cache only)" if local_files_only else ""))
     tokenizers = {}
     if "gpt2" in tokenizer_names:
         tokenizers["GPT-2 (tiktoken)"] = tiktoken.get_encoding("gpt2").encode
     if "xlmr" in tokenizer_names:
-        xlmr_tok = AutoTokenizer.from_pretrained("xlm-roberta-base")
+        xlmr_tok = AutoTokenizer.from_pretrained("xlm-roberta-base", local_files_only=local_files_only)
         tokenizers["XLM-RoBERTa-base"] = lambda s: xlmr_tok.encode(s, add_special_tokens=False)
     if "qwen" in tokenizer_names:
-        qwen_tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B")
+        qwen_tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B", local_files_only=local_files_only)
         tokenizers["Qwen2.5-7B"] = lambda s: qwen_tok.encode(s, add_special_tokens=False)
 
     results = []
@@ -130,6 +130,11 @@ if __name__ == "__main__":
     parser.add_argument("--sample-size", type=int, default=250)
     parser.add_argument("--langs", default="eng,hin,kan,tam")
     parser.add_argument("--tokenizers", default="gpt2,xlmr,qwen")
+    parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="use only locally cached Hugging Face tokenizer files",
+    )
     args = parser.parse_args()
     if args.sample_size < 1:
         parser.error("--sample-size must be positive")
@@ -141,4 +146,4 @@ if __name__ == "__main__":
         parser.error(f"unsupported tokenizers: {', '.join(unknown)}")
     if "eng" not in langs:
         parser.error("--langs must include eng for relative ratios")
-    run_corrected_benchmark(args.sample_size, langs, tokenizer_names)
+    run_corrected_benchmark(args.sample_size, langs, tokenizer_names, args.offline)

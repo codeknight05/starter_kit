@@ -32,9 +32,9 @@ This audit records the evidence currently present in the repository. `PASS` mean
 
 ## Remaining limitations
 
-- The checked-in corpus is formal FLORES text, not sampled production traffic.
-- XLM-R and Qwen tokenizer counts do not establish end-to-end generation latency or serving cost.
-- The two-replica `401.84 output tok/s` figure is a first-order projection; no two-replica serving benchmark is included.
+- The checked-in corpus is formal FLORES text, not sampled production traffic. The required production sampling and acceptance procedure is documented in `PRODUCTION_VALIDATION.md`; no production data was available in this environment.
+- XLM-R and Qwen tokenizer counts do not establish end-to-end generation latency or serving cost. The validation document separates tokenizer-count, prefill, decode, and end-to-end measurements.
+- The two-replica `401.84 output tok/s` figure is a first-order projection; no two-replica serving benchmark is included because the available environment has no two-GPU serving setup. The document specifies the benchmark needed to replace the projection.
 - The OPUS-100 fallback is pairwise rather than shared multi-way data and is not equivalent to the checked-in FLORES evidence.
 - The Part C success thresholds are preselected decision criteria, not measured outcomes.
-- Hugging Face tokenizer downloads require network access or a local cache on first run.
+- Hugging Face tokenizer downloads require network access or a local cache on first run; `corrected_analysis.py --offline` now supports cache-only reruns.
