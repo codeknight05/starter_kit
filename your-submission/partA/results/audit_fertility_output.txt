@@ -1,0 +1,47 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+=== EXPERIMENT 1: Flaw #1 — Naive line.split(' ') vs line.split() ===
+Target Line: 'Please keep the books  in the cupboard.'
+  Tokens: 10
+  Naive line.split(' '): 8 words -> Fertility = 1.2500
+  Clean line.split():    7 words -> Fertility = 1.4286
+  Delta: +0.1786 (Fertility deflated by 12.50% due to empty string in word list)
+
+English Sample Corpus Overall:
+  Naive sum(split(' ')): 79 words -> Fertility = 1.2532
+  Clean sum(split()):    78 words -> Fertility = 1.2692
+
+=== EXPERIMENT 2: Flaw #2 — Macro-Average vs Micro-Average ===
+--- Sample Corpus ---
+  [eng] Macro-Avg: 1.2831 | Micro-Avg: 1.2692 | Delta: +0.0138 (+1.09%)
+  [hin] Macro-Avg: 7.5985 | Micro-Avg: 7.5246 | Delta: +0.0739 (+0.98%)
+
+--- Eval Corpus (250 lines) ---
+  [eng] Macro-Avg: 1.3350 | Micro-Avg: 1.3189 | Delta: +0.0161 (+1.22%)
+  [hin] Macro-Avg: 7.8644 | Micro-Avg: 7.8250 | Delta: +0.0393 (+0.50%)
+  [kan] Macro-Avg: 22.2279 | Micro-Avg: 22.0269 | Delta: +0.2010 (+0.91%)
+  [tam] Macro-Avg: 24.6861 | Micro-Avg: 24.6026 | Delta: +0.0835 (+0.34%)
+
+=== EXPERIMENT 3: Conceptual Flaw #1 — Words as Cross-Lingual Unit ===
+English Eval Set:   5366 total words (21.5 words/sent) | Tok/Word: 1.26
+Kannada Eval Set:   4156 total words (16.6 words/sent) | Tok/Word: 22.02
+Tok/Word Ratio (Kan/Eng): 17.52x worse
+Tok/Sentence Ratio (Kan/Eng): 13.57x worse
+Distortion: Comparing Tok/Word inflates Kannada cost inefficiency by 29.1% because Kannada packs 1.29x more semantic payload into each word due to agglutination!
+
+=== EXPERIMENT 4: Conceptual Flaw #2 — Script Myth vs Tokenizer Vocab ===
+lang    GPT2 Tok/Graph   XLM-R Tok/Graph  Vocab Effect Ratio
+--------------------------------------------------------------
+eng              0.206             0.233                0.88x lower with XLM-R
+hin              2.202             0.426                5.17x lower with XLM-R
+kan              4.052             0.464                8.73x lower with XLM-R
+tam              4.205             0.422                9.97x lower with XLM-R
+
+Conclusion: The 6x cost explosion in Hindi is NOT an inherent property of Indic scripts, but an artifact of GPT-2's English-centric vocabulary!
+
+=== EXPERIMENT 5: Harmless Feature Audit — line.lower() on Indic Text ===
+[hin] Total Sentences: 250 | String lower() diffs: 16 | Token count diffs: 7 | Net token delta: +6 (+0.012%)
+[kan] Total Sentences: 250 | String lower() diffs: 30 | Token count diffs: 16 | Net token delta: +11 (+0.012%)
+[tam] Total Sentences: 250 | String lower() diffs: 30 | Token count diffs: 14 | Net token delta: +14 (+0.013%)
+Result: lower() is not an Indic Unicode-corruption bug. Its measured effect is tiny and comes from caseful embedded Latin text, so it is not a driver of the v0 cross-language claim.
+

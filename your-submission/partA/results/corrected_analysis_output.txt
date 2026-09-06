@@ -1,0 +1,40 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loaded eval corpus: 250 parallel sentences per language.
+
+Loading tokenizers...
+Benchmarking GPT-2 (tiktoken)...
+Benchmarking XLM-RoBERTa-base...
+Benchmarking Qwen2.5-7B...
+
+================================ FULL BENCHMARK MATRIX ================================
+       Tokenizer Language  Total Tokens  Tok / Sentence  Tok / Word  Tok / Grapheme  Tok / Byte
+GPT-2 (tiktoken)      eng          6745          26.980    1.256988        0.205891    0.205759
+GPT-2 (tiktoken)      hin         49628         198.512    7.824058        2.201970    0.594418
+GPT-2 (tiktoken)      kan         91533         366.132   22.024302        4.052105    0.977144
+GPT-2 (tiktoken)      tam        104547         418.188   24.599294        4.204754    0.994984
+XLM-RoBERTa-base      eng          7630          30.520    1.421916        0.232906    0.232757
+XLM-RoBERTa-base      hin          9605          38.420    1.514268        0.426169    0.115044
+XLM-RoBERTa-base      kan         10479          41.916    2.521415        0.463898    0.111867
+XLM-RoBERTa-base      tam         10483          41.932    2.466588        0.421614    0.099768
+      Qwen2.5-7B      eng          6976          27.904    1.300037        0.212943    0.212806
+      Qwen2.5-7B      hin         30124         120.496    4.749172        1.336587    0.360810
+      Qwen2.5-7B      kan         47768         191.072   11.493744        2.114658    0.509939
+      Qwen2.5-7B      tam         42145         168.580    9.916471        1.695021    0.401098
+
+================ RELATIVE COST RATIOS (NORMALIZED TO ENGLISH = 1.00) ================
+       Tokenizer Language  Sent Ratio (Cost)  Word Ratio  Grapheme Ratio  Byte Ratio
+GPT-2 (tiktoken)      eng           1.000000    1.000000        1.000000    1.000000
+GPT-2 (tiktoken)      hin           7.357746    6.224447       10.694817    2.888900
+GPT-2 (tiktoken)      kan          13.570497   17.521483       19.680795    4.748964
+GPT-2 (tiktoken)      tam          15.499926   19.570024       20.422200    4.835669
+XLM-RoBERTa-base      eng           1.000000    1.000000        1.000000    1.000000
+XLM-RoBERTa-base      hin           1.258847    1.064949        1.829790    0.494266
+XLM-RoBERTa-base      kan           1.373394    1.773252        1.991784    0.480616
+XLM-RoBERTa-base      tam           1.373919    1.734694        1.810231    0.428635
+      Qwen2.5-7B      eng           1.000000    1.000000        1.000000    1.000000
+      Qwen2.5-7B      hin           4.318234    3.653105        6.276748    1.695485
+      Qwen2.5-7B      kan           6.847477    8.841088        9.930645    2.396259
+      Qwen2.5-7B      tam           6.041428    7.627836        7.959989    1.884805
+
+Saved results to corrected_benchmark.csv and relative_ratios.csv

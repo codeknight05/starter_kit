@@ -1,0 +1,21 @@
+=== B1 KV Cache Arithmetic ===
+KV bytes/token = 28 * 2 * 8 * 128 * 2 = 114,688
+KV per 4096-token sequence = 448.0 MiB
+Usable memory = 24 GiB * 0.92 = 22.08 GiB
+Weights = 4.2B * 2 bytes = 7.82 GiB
+Runtime overhead = 1.6 GB = 1.49 GiB
+KV pool = 12.77 GiB
+Ideal max 4096-token sequences = 29.18
+
+=== Long-Context Sweep ===
+batch,prompt,gen,wall_s,reported_tok_s,output_tok_s,reported_output_adjusted_tok_s,preempted,kv_util
+4,3584,512,28.98,565.4,70.67,70.67,0,0.16
+8,3584,512,36.30,902.6,112.84,112.83,0,0.31
+16,3584,512,49.97,1311.4,163.94,163.93,0,0.62
+24,3584,512,61.16,1607.4,200.92,200.93,0,0.93
+32,3584,512,94.71,1384.0,172.99,173.00,7,0.97
+48,3584,512,151.41,1298.5,162.31,162.31,23,0.97
+
+=== B3 Batch-24 Goodput ===
+Direct output goodput = 24 * 512 / 61.16 = 200.92 output tok/s
+Reported-throughput adjusted = 1607.4 * 512 / 4096 = 200.93 output tok/s
